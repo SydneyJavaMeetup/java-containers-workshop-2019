@@ -16,7 +16,7 @@ That's why we've hired you to be our first Full Stack Engineer. We need a more s
 ### Requirements:
 * AWS account - if you don't have one, it's easy and free to [create one](https://aws.amazon.com/)
 * AWS IAM account with elevated privileges allowing you to interact with various AWS Services
-* Familiarity with Python, vim/emacs/nano, [Docker](https://www.docker.com/), AWS and microservices - not required but a bonus
+* Familiarity with Java, vim/emacs/nano, [Docker](https://www.docker.com/), AWS and microservices - not required but a bonus
 
 ### Building your docker image
 
@@ -38,6 +38,4 @@ You will learn,
             * Splitiing monolith into microservices, leveraging ALB
             * CI/CD Pipeline for ECS
 
-### EKS Learning Path
-For EKS learning part [click here](https://github.com/kmhabib/containers-sydsummit-eks-workshop-2019/tree/master/amazon-ecs-mythicalmysfits-workshop/workshop-1)
 
