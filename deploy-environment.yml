@@ -1,7 +1,7 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
 Description: This stack deploys the core network infrastructure and IAM resources
-             to be used for a service hosted in Amazon ECS using AWS Fargate and Amazon EKS.
+             to be used for a service hosted in Amazon ECS using AWS Fargate.
 
 Parameters:
   SkipBucket:
@@ -10,6 +10,7 @@ Parameters:
     AllowedValues:
       - "true"
       - "false"
+
 
 Conditions:
   MakeBucket:
@@ -42,95 +43,82 @@ Mappings:
       CIDR: '10.0.3.0/24'
 
 Resources:
-  MythicalBucket:
-    Type: AWS::S3::Bucket
-    Condition: MakeBucket
-    Properties:
-      AccessControl: PublicRead
-      WebsiteConfiguration:
-        IndexDocument: index.html
-        ErrorDocument: error.html
-
-  Mono:
+  SydneyJavaDockerRepository:
     Type: AWS::ECR::Repository
 
-  Like:
-    Type: AWS::ECR::Repository
-
-  MythicalEcsCluster:
+  SydneyJavaEcsCluster:
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: !Sub Cluster-${AWS::StackName}
 
-  MythicalMonolithLogGroup:
+  SydneyJavaLogGroup:
     Type: AWS::Logs::LogGroup
 
-  MythicalMonolithTaskDefinition:
+  SydneyJavaTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Cpu: 256
       ExecutionRoleArn: !GetAtt EcsServiceRole.Arn
-      Family: !Sub Monolith-Definition-${AWS::StackName}
+      Family: !Sub Sydney-Java-Definition-${AWS::StackName}
       Memory: 512
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
       TaskRoleArn: !GetAtt ECSTaskRole.Arn
       ContainerDefinitions:
-        - Name: monolith-service
+        - Name: sydney-java-service
           Image: nginx:latest
           PortMappings:
             - ContainerPort: 80
               Protocol: http
           Environment:
             - Name: UPSTREAM_URL
-              Value: !GetAtt MythicalLoadBalancer.DNSName
+              Value: !GetAtt SydneyJavaLoadBalancer.DNSName
             - Name: DDB_TABLE_NAME
-              Value: !Ref MythicalDynamoTable
+              Value: !Ref SydneyJavaDynamoTable
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Ref MythicalMonolithLogGroup
+              awslogs-group: !Ref SydneyJavaLogGroup
               awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: awslogs-mythicalmysfits-service
+              awslogs-stream-prefix: awslogs-sydney-java-service
           Essential: true
 
-  MythicalLoadBalancerSecurityGroup:
+  SydneyJavaLoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub SecurityGroup-${AWS::StackName}
       GroupDescription: Access to the load balancer
       VpcId: !Ref 'VPC'
       SecurityGroupIngress:
-          # Allow access to ALB from anywhere on the internet
           - IpProtocol: tcp
             FromPort: 80
             ToPort: 80
             CidrIp: 0.0.0.0/0
 
-  MythicalLoadBalancer:
+  SydneyJavaLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      Name: !Sub alb-mythical-mysfits
+      Name: !Sub alb-${AWS::StackName}
       Scheme: internet-facing
       Type: application
       SecurityGroups:
-        - !Ref MythicalLoadBalancerSecurityGroup
+        - !Ref SydneyJavaLoadBalancerSecurityGroup
       Subnets:
         - !Ref PublicSubnetOne
         - !Ref PublicSubnetTwo
 
-  MythicalListener:
+  SydneyJavaListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
-        - TargetGroupArn: !Ref MythicalMonolithTargetGroup
+        - TargetGroupArn: !Ref SydneyJavaTargetGroup
           Type: forward
-      LoadBalancerArn: !Ref MythicalLoadBalancer
+      LoadBalancerArn: !Ref SydneyJavaLoadBalancer
       Port: 80
       Protocol: HTTP
 
-  MythicalMonolithTargetGroup:
+  SydneyJavaTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckIntervalSeconds: 10
@@ -143,20 +131,20 @@ Resources:
       VpcId: !Ref VPC
       TargetType: ip
 
-  MythicalMonolithService:
+  SydneyJavaService:
     Type: AWS::ECS::Service
-    DependsOn: MythicalListener
+    DependsOn: SydneyJavaListener
     Properties:
-      Cluster: !Ref MythicalEcsCluster
+      Cluster: !Ref SydneyJavaEcsCluster
       DeploymentConfiguration:
         MinimumHealthyPercent: 0
         MaximumPercent: 200
       DesiredCount: 1
       LaunchType: FARGATE
       LoadBalancers:
-        - ContainerName: monolith-service
+        - ContainerName: sydney-java-service
           ContainerPort: 80
-          TargetGroupArn: !Ref MythicalMonolithTargetGroup
+          TargetGroupArn: !Ref SydneyJavaTargetGroup
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
@@ -165,7 +153,7 @@ Resources:
           Subnets:
             - !Ref PrivateSubnetOne
             - !Ref PrivateSubnetTwo
-      TaskDefinition: !Ref MythicalMonolithTaskDefinition
+      TaskDefinition: !Ref SydneyJavaTaskDefinition
 
   # VPC in which containers will be networked.
   # It has two public subnets, and two private subnets.
@@ -179,35 +167,31 @@ Resources:
       CidrBlock: !FindInMap ['SubnetConfig', 'VPC', 'CIDR']
       Tags:
         - Key: Name
-          Value: !Sub Mysfits-VPC-${AWS::StackName}
+          Value: !Sub Sydney-Java-VPC-${AWS::StackName}
 
   # Two public subnets, where a public load balancer will later be created.
   PublicSubnetOne:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone:
-         Fn::Select:
-         - 0
-         - Fn::GetAZs: {Ref: 'AWS::Region'}
+      AvailabilityZone: 'ap-southeast-2a'
       VpcId: !Ref 'VPC'
       CidrBlock: !FindInMap ['SubnetConfig', 'PublicOne', 'CIDR']
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub MysfitsPublicOne-${AWS::StackName}
+          Value: !Sub SydneyJavaPublicOne-${AWS::StackName}
+
   PublicSubnetTwo:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone:
-         Fn::Select:
-         - 1
-         - Fn::GetAZs: {Ref: 'AWS::Region'}
+      # hard-wiring here as there is a bug in the cloud formation GetAZs data for Sydney
+      AvailabilityZone: 'ap-southeast-2b'
       VpcId: !Ref 'VPC'
       CidrBlock: !FindInMap ['SubnetConfig', 'PublicTwo', 'CIDR']
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub MysfitsPublicTwo-${AWS::StackName}
+          Value: !Sub SydneyJavaPublicTwo-${AWS::StackName}
 
   # Two private subnets where containers will only have private
   # IP addresses, and will only be reachable by other members of the
@@ -215,27 +199,21 @@ Resources:
   PrivateSubnetOne:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone:
-         Fn::Select:
-         - 0
-         - Fn::GetAZs: {Ref: 'AWS::Region'}
+      AvailabilityZone: 'ap-southeast-2a'
       VpcId: !Ref 'VPC'
       CidrBlock: !FindInMap ['SubnetConfig', 'PrivateOne', 'CIDR']
       Tags:
         - Key: Name
-          Value: !Sub MysfitsPrivateOne-${AWS::StackName}
+          Value: !Sub SydneyJavaPrivateOne-${AWS::StackName}
   PrivateSubnetTwo:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone:
-         Fn::Select:
-         - 1
-         - Fn::GetAZs: {Ref: 'AWS::Region'}
+      AvailabilityZone: 'ap-southeast-2b'
       VpcId: !Ref 'VPC'
       CidrBlock: !FindInMap ['SubnetConfig', 'PrivateTwo', 'CIDR']
       Tags:
         - Key: Name
-          Value: !Sub MysfitsPrivateTwo-${AWS::StackName}
+          Value: !Sub SydneyJavaPrivateTwo-${AWS::StackName}
 
   # Setup networking resources for the public subnets.
   InternetGateway:
@@ -343,19 +321,16 @@ Resources:
       VpcId: !Ref 'VPC'
 
   # The security group for our service containers to be hosted in Fargate.
-  # Even though traffic from users will pass through a Network Load Balancer,
-  # that traffic is purely TCP passthrough, without security group inspection.
-  # Therefore, we will allow for traffic from the Internet to be accepted by our
-  # containers.  But, because the containers will only have Private IP addresses,
-  # the only traffic that will reach the containers is traffic that is routed
-  # to them by the public load balancer on the specific ports that we configure.
+  # We will allow for traffic from the anywhere in the VPC.
+  # Public Internet traffic will be forwarded to the private network
+  # hosting our ECS containers by the ALB.
   FargateContainerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Access to the fargate containers from the Internet
       VpcId: !Ref 'VPC'
       SecurityGroupIngress:
-          # Allow access to NLB from anywhere on the internet
+          # Allow access to ECS from anywhere in the VPC
           - CidrIp: !FindInMap ['SubnetConfig', 'VPC', 'CIDR']
             IpProtocol: -1
 
@@ -418,10 +393,10 @@ Resources:
             Resource: '*'
 
   # This is a role which is used by the ECS tasks. Tasks in Amazon ECS define
-  # the containers that should be deployed togehter and the resources they
+  # the containers that should be deployed together and the resources they
   # require from a compute/memory perspective. So, the policies below will define
-  # the IAM permissions that our Mythical Mysfits docker containers will have.
-  # If you attempted to write any code for the Mythical Mysfits service that
+  # the IAM permissions that our Sydney Java docker containers will have.
+  # If you attempted to write any code for the Sydney Java service that
   # interacted with different AWS service APIs, these roles would need to include
   # those as allowed actions.
   ECSTaskRole:
@@ -433,7 +408,6 @@ Resources:
           Principal:
             Service:
               - ecs-tasks.amazonaws.com
-              # Also add EC2 for testing in Cloud9
               - ec2.amazonaws.com
           Action: ['sts:AssumeRole']
       Path: /
@@ -457,79 +431,56 @@ Resources:
 
             - Effect: Allow
               Action:
-                # Allows the ECS tasks to interact with only the MysfitsTable
+                # Allows the ECS tasks to interact with only the SydneyJavaTable
                 # in DynamoDB
                 - 'dynamodb:Scan'
                 - 'dynamodb:Query'
                 - 'dynamodb:UpdateItem'
                 - 'dynamodb:GetItem'
-              Resource: !GetAtt MythicalDynamoTable.Arn
-  MythicalProfile:
+              Resource: !GetAtt SydneyJavaDynamoTable.Arn
+
+  SydneyJavaProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Roles:
         - !Ref ECSTaskRole
 
-  MythicalDynamoTable:
+  SydneyJavaDynamoTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub Table-${AWS::StackName}
+      TableName: !Sub Balloons-Table-${AWS::StackName}
       AttributeDefinitions:
-        - AttributeName: MysfitId
+        - AttributeName: BalloonId
           AttributeType: S
-        - AttributeName: GoodEvil
-          AttributeType: S
-        - AttributeName: LawChaos
-          AttributeType: S
-      GlobalSecondaryIndexes:
-        - IndexName: LawChaosIndex
-          KeySchema:
-            - AttributeName: LawChaos
-              KeyType: HASH
-            - AttributeName: MysfitId
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
-        - IndexName: GoodEvilIndex
-          KeySchema:
-            - AttributeName: GoodEvil
-              KeyType: HASH
-            - AttributeName: MysfitId
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
       KeySchema:
-        - AttributeName: MysfitId
+        - AttributeName: BalloonId
           KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
 
-  MythicalEnvironment:
-    Type: AWS::Cloud9::EnvironmentEC2
-    Properties:
-      AutomaticStopTimeMinutes: 30
-      InstanceType: t2.small
-      Name: !Sub Project-${AWS::StackName}
-      SubnetId: !Ref PublicSubnetOne
-
 Outputs:
   LoadBalancerDNS:
     Description: The DNS for the load balancer
-    Value: !GetAtt MythicalLoadBalancer.DNSName
+    Value: !GetAtt SydneyJavaLoadBalancer.DNSName
   DynamoTable:
-    Value: !Ref MythicalDynamoTable
-  SiteBucket:
-    Value: !Ref MythicalBucket
-    Condition: MakeBucket
-  Cloud9Env:
-    Value:
-      !Join ["",["https://",!Ref "AWS::Region",".console.aws.amazon.com/cloud9/ide/",!Ref MythicalEnvironment,"?region=",!Ref "AWS::Region"]]
+    Value: !Ref SydneyJavaDynamoTable
+  PrivateSubnetOne:
+    Value: !Ref PrivateSubnetOne
+  PrivateSubnetTwo:
+    Value: !Ref PrivateSubnetTwo
+  EcsClusterName:
+    Value: !Ref SydneyJavaEcsCluster
+  StackName:
+    Value: !Sub ${AWS::StackName}
+  SydneyJavaTaskDefinition:
+    Value: !Ref SydneyJavaTaskDefinition
+  SydneyJavaTargetGroupArn:
+    Value: !Ref SydneyJavaTargetGroup
+  FargateContainerSecurityGroup:
+    Value: !Ref FargateContainerSecurityGroup
   ProfileName:
-    Value: !Ref MythicalProfile
+    Value: !Ref SydneyJavaProfile
+  EcrRepo:
+    Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${SydneyJavaDockerRepository}
+
