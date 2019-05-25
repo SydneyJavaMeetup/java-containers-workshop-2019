@@ -1,0 +1,1 @@
+aws cloudformation deploy --region ap-southeast-2 --template-file "deploy-environment.yml" --stack-name SydneyJavaContainers --capabilities CAPABILITY_NAMED_IAM
