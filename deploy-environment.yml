@@ -4,17 +4,9 @@ Description: This stack deploys the core network infrastructure and IAM resource
              to be used for a service hosted in Amazon ECS using AWS Fargate.
 
 Parameters:
-  SkipBucket:
+  ContainerImage:
     Type: String
-    Default: "false"
-    AllowedValues:
-      - "true"
-      - "false"
-
-
-Conditions:
-  MakeBucket:
-    Fn::Equals: ["false", !Ref SkipBucket]
+    Default: "nginx:latest"
 
 Mappings:
   # Hard values for the subnet masks. These masks define
@@ -67,7 +59,7 @@ Resources:
       TaskRoleArn: !GetAtt ECSTaskRole.Arn
       ContainerDefinitions:
         - Name: sydney-java-service
-          Image: nginx:latest
+          Image: !Ref ContainerImage
           PortMappings:
             - ContainerPort: 80
               Protocol: http
