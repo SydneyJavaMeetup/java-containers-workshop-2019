@@ -8,10 +8,6 @@ Parameters:
     Type: String
     Default: "nginx:latest"
 
-  ContainerPort:
-    Type: Number
-    Default: 80
-
 Mappings:
   # Hard values for the subnet masks. These masks define
   # the range of internal IP addresses that can be assigned.

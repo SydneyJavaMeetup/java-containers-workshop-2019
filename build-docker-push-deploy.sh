@@ -7,6 +7,10 @@ ECR_REPO=$(jq < cfn-output.json -r '.Stacks[0].Outputs[] | select(.OutputKey=="'
 
 $(aws ecr get-login --no-include-email)
 
-docker build -t sydney-java-service .
-docker tag sydney-java-service:latest $ECR_REPO:latest
-docker push $ECR_REPO:latest
+ECR_TAG="latest-$(date +"%m-%d-%Y--%H-%M--%S")"
+
+docker build -t sydney-java-service:${ECR_TAG} .
+docker tag sydney-java-service:${ECR_TAG} ${ECR_REPO}:${ECR_TAG}
+docker push ${ECR_REPO}:${ECR_TAG}
+
+./deploy-environment.sh "${ECR_REPO}:${ECR_TAG}"
