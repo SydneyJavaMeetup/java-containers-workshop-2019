@@ -7,4 +7,4 @@ $(aws ecr get-login --no-include-email)
 
 docker build -t sydney-java-service .
 docker tag sydney-java-service:latest $ECR_REPO:latest
-# docker push $ECR_REPO:latest
+docker push $ECR_REPO:latest
