@@ -431,6 +431,8 @@ Resources:
                 - 'dynamodb:Query'
                 - 'dynamodb:UpdateItem'
                 - 'dynamodb:GetItem'
+                - 'dynamodb:PutItem'
+                - 'dynamodb:DeleteItem'
               Resource: !GetAtt SydneyJavaDynamoTable.Arn
 
   SydneyJavaProfile:
