@@ -59,4 +59,8 @@ public class BalloonDynamoAccess {
                 .item(item_values)
                 .build()).join();
     }
+
+    public void saveBalloon(Balloon balloon) {
+        saveBalloon(balloon.getId(), balloon.getUrl(), balloon.getPopped());
+    }
 }
