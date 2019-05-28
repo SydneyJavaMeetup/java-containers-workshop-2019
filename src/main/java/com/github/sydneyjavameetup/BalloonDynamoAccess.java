@@ -10,10 +10,11 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public class BalloonDynamoAccess {
+public class BalloonDynamoAccess implements BalloonDBAccess {
     private static final String TABLE_NAME = "Balloons-Table-SydneyJavaContainers";
     private static final DynamoDbAsyncClient client = DynamoDbAsyncClient.create();
 
+    @Override
     public void deleteBalloon(String id) {
         client.deleteItem(DeleteItemRequest.builder()
                 .tableName(TABLE_NAME)
@@ -21,6 +22,7 @@ public class BalloonDynamoAccess {
                 .build()).join();
     }
 
+    @Override
     public Balloon getBalloon(String id) {
         Map<String, AttributeValue> balloonProperties = client.getItem(GetItemRequest.builder()
                 .tableName(TABLE_NAME)
@@ -29,6 +31,7 @@ public class BalloonDynamoAccess {
         return Balloon.of(balloonProperties.get("BalloonId").s(), balloonProperties.get("URL").s(), balloonProperties.get("Popped").bool());
     }
 
+    @Override
     public List<Balloon> listBalloons() {
         CompletableFuture<ScanResponse> listBalloons = client.scan(
                 ScanRequest.builder()
@@ -48,6 +51,7 @@ public class BalloonDynamoAccess {
         );
     }
 
+    @Override
     public void saveBalloon(String id, String url, Boolean popped) {
         HashMap<String, AttributeValue> item_values = new HashMap<>();
         item_values.put("BalloonId", AttributeValue.builder().s(id).build());
@@ -60,6 +64,7 @@ public class BalloonDynamoAccess {
                 .build()).join();
     }
 
+    @Override
     public void saveBalloon(Balloon balloon) {
         saveBalloon(balloon.getId(), balloon.getUrl(), balloon.getPopped());
     }

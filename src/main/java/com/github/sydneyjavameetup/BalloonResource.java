@@ -5,7 +5,7 @@ import java.util.List;
 
 @Path("/")
 public class BalloonResource {
-    private BalloonDynamoAccess database;
+    private BalloonDBAccess database;
 
     public BalloonResource() {
         this.database = new BalloonDynamoAccess();
