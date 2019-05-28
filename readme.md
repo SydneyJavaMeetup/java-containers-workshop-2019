@@ -20,18 +20,31 @@ There will be a lot to get through in a short time, but we'll have a crack, hope
 # Handy Docker Commands
 https://docs.docker.com/engine/reference/commandline/cli/
 
-## Build an Image based on Dockerfile
+### Build an Image based on Dockerfile
+```
 docker build -t image-name .
+```
 
-## Run an image (with port 8080 exposed to the host)
+### Run an image (with port 8080 exposed to the host)
+```
 docker run -p 8080:8080/tcp image-name
+```
 
-## View running docker images
+### View running docker images
+```
 docker ps
+```
 
-## List Images
+### List Images
+```
 docker images
+```
 
-## Remove an Image
+### Remove an Image
+```
 docker image rm image-name
-(or docker image rm --force image-name)
+```
+or 
+```
+docker image rm --force image-name
+```
