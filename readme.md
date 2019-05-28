@@ -6,6 +6,10 @@ We'll start by discussing a few of the ways docker and containerisation can be u
 
 Next, for the adventurous, we'll deploy a container environment on our own AWS accounts using CloudFormation, an infrastructure automation framework. 
 
+If you're doing that you'll need to install the AWS CLI from here:
+
+https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
+
 After that we'll build a small Java web service using the Helidon framework, and package it into a Java 8 (AWS Corretto) container.
 https://helidon.io/#/
 
