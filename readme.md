@@ -10,6 +10,17 @@ Next, for the adventurous, we'll deploy a container environment on our own AWS a
 If you're doing that you'll need to install the AWS CLI from here:
 https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
 
+Once you've got the CLI installed and configured (aws configure), you'll need to deploy the environment using the template here:
+
+[deploy-environment.yml](deploy-environment.yml)
+
+```
+aws cloudformation deploy --region ap-southeast-2 \
+                          --template-file "deploy-environment.yml" \
+                          --stack-name SydneyJavaContainers \
+                          --capabilities CAPABILITY_NAMED_IAM
+```
+
 ## Step 2 - Build a Web Service with Helidon
 After that we'll build a small Java web service using the Helidon framework, and package it into a Java 8 (AWS Corretto) container.
 https://helidon.io/#/
