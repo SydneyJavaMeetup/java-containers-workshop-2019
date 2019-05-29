@@ -4,6 +4,8 @@ In this workshop we'll be building a simple Docker based Java service, and deplo
 
 We'll start by discussing a few of the ways docker and containerisation can be used on the AWS platform.
 
+Then we'll dive into the workshop steps:
+
 ## Step 1 - Deploy Environment
 Next, for the adventurous, we'll deploy a container environment on our own AWS accounts using CloudFormation, an infrastructure automation framework. 
 
