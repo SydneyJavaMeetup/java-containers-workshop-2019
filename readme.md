@@ -4,20 +4,41 @@ In this workshop we'll be building a simple Docker based Java service, and deplo
 
 We'll start by discussing a few of the ways docker and containerisation can be used on the AWS platform.
 
+## Step 1 - Deploy Environment
 Next, for the adventurous, we'll deploy a container environment on our own AWS accounts using CloudFormation, an infrastructure automation framework. 
 
 If you're doing that you'll need to install the AWS CLI from here:
-
 https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
 
+## Step 2 - Build a Web Service with Helidon
 After that we'll build a small Java web service using the Helidon framework, and package it into a Java 8 (AWS Corretto) container.
 https://helidon.io/#/
 
+```
+mvn archetype:generate -DinteractiveMode=false \
+    -DarchetypeGroupId=io.helidon.archetypes \
+    -DarchetypeArtifactId=helidon-quickstart-mp \
+    -DarchetypeVersion=1.1.1 \
+    -DgroupId=com.github.sydneyjavameetup \
+    -DartifactId=balloon-service \
+    -Dpackage=com.github.sydneyjavameetup.balloons
+```
+
+* trim the Dockerfile and .dockerignore
+* build and package with maven
+* build docker image
+* run the docker image locally
+* update the port to 80
+* rebuild
+
+## Publishing to Our AWS Environment
 Finally to bring it all together we'll update the container environment by publishing our Java service to a container registry and creating an updated service task to point at our service's container.
 
 Push instructions:
 https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html
 
+
+## Reference
 Here's the preso!
 https://1drv.ms/p/s!Al_H-71CJTZJi-gYFy6RslD5-Y3cZQ 
 
