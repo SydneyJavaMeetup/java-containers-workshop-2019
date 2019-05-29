@@ -15,6 +15,9 @@ https://helidon.io/#/
 
 Finally to bring it all together we'll update the container environment by publishing our Java service to a container registry and creating an updated service task to point at our service's container.
 
+Push instructions:
+https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html
+
 Here's the preso!
 https://1drv.ms/p/s!Al_H-71CJTZJi-gYFy6RslD5-Y3cZQ 
 
