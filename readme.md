@@ -48,6 +48,30 @@ Finally to bring it all together we'll update the container environment by publi
 Push instructions:
 https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html
 
+Log docker into ECR:
+```
+aws ecr get-login --region ap-southeast-2 --no-include-email
+```
+
+Tag:
+```
+docker tag balloon-service:latest xyz.ecr.region.amazonaws.com:latest
+```
+
+Push:
+```
+docker push xyz.ecr.region.amazonaws.com:latest
+```
+
+Update the CloudFormation template:
+```
+aws cloudformation deploy --region ap-southeast-2 \
+                          --template-file "deploy-environment.yml" \
+                          --stack-name SydneyJavaContainers \
+                          --capabilities CAPABILITY_NAMED_IAM \
+                          --parameter-overrides \
+                          ContainerImage="xyz.ecr.region.amazonaws.com:latest"
+```
 
 ## Reference
 Here's the preso!
