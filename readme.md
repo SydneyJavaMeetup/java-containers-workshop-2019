@@ -52,3 +52,8 @@ or
 ```
 docker image rm --force image-name
 ```
+
+### Shell into a running image
+```
+docker exec -it 52c5629d1266 /bin/bash
+```
